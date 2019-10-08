@@ -1,6 +1,7 @@
 import asyncio
 import subprocess
 import traceback
+import time
 import os
 import sys
 import re
@@ -19,9 +20,10 @@ if not os.getcwd().endswith("Peanut"):
 bot = commands.Bot(command_prefix=commands.when_mentioned_or("p!"), description="Invoke me with `p!<command>`.")
 
 
-bot.data = Data("config.json", timer=216000, duration=5184000)
+bot.data = Data("config.json", timer=3600, duration=86400)
 bot.theme = None
 bot.channel = None
+bot.end = None
 
 
 @bot.event
@@ -75,7 +77,14 @@ async def join(ctx):
 
     await ctx.author.send("Roger that.")
     await bot.channel.send(f"{ctx.author}: {message.content}")
-        
+
+@bot.command()
+async def remaining(ctx):
+    if not bot.theme:
+        return await ctx.send("No jam is running currently.")
+    seconds = int(bot.end - time.time())
+    await ctx.send(f"{seconds} seconds (about {seconds // 60} minutes) are remaining in the current level jam.")
+
 
 @bot.group(invoke_without_command=True)
 @commands.has_permissions(kick_members=True)
@@ -89,6 +98,7 @@ async def start(ctx, theme):
     bot.theme = theme.strip("| ")
     bot.channel = ctx.channel
     await ctx.send(f"Beginning a jam that will end in roughly {bot.data.duration // 60} minutes.")
+    bot.end = time.time() + bot.data.duration
     await asyncio.sleep(bot.data.duration)
     if bot.theme:
         await ctx.send("Jam has ended.")
@@ -106,7 +116,7 @@ async def stop(ctx):
 
 @eventmod.command()
 async def timer(ctx, seconds: int):
-    bot.data.duration = seconds
+    bot.data.timer = seconds
     await ctx.send(f"Set time to finish jam to {seconds} seconds (about {seconds // 60} minutes).")
 
 @eventmod.command()
