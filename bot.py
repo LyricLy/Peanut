@@ -87,7 +87,7 @@ async def remaining(ctx):
 
 
 @bot.group(invoke_without_command=True)
-@commands.has_any_role("Bought The Peanut Butter", "Mod Fuzzy")
+@commands.has_any_role(630717723051032606, 624188805376770059)
 async def eventmod(ctx):
     await ctx.send_help(ctx.command)
 
